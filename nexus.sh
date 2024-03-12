@@ -11,7 +11,8 @@ nexusInstall() {
     sudo useradd --system --no-create-home --shell /bin/false nexus
 
     # Download Nexus
-    NEXUS_VERSION="3.42.0-01"
+    # https://download.sonatype.com/nexus/3/nexus-3.66.0-02-unix.tar.gz
+    NEXUS_VERSION="3.66.0-02"
     wget "https://download.sonatype.com/nexus/3/nexus-${NEXUS_VERSION}-unix.tar.gz"
 
     # Extract Nexus
@@ -96,5 +97,24 @@ EOT
     # Test and reload Nginx
     sudo nginx -t && sudo systemctl reload nginx
 }
+
+main() {
+    case "$1" in
+        nexusInstall)
+            nexusInstall
+            ;;
+        nginxInstall)
+            nginxInstall
+            ;;
+        nginxConfig)
+            nginxConfig "$2" "$3"
+            ;;
+        *)
+            echo "Usage: $0 {nexusInstall|nginxInstall|nginxConfig -f proxies.txt}"
+            exit 1
+    esac
+}
+
+main "$@"
 
 # Call functions as needed, e.g., nexusInstall, nginxInstall, nginxConfig -f ./proxies.txt

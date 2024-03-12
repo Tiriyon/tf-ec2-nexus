@@ -2,13 +2,20 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-resource "aws_security_group" "allow_ssh" {
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
+resource "aws_security_group" "allow_ssh_http" {
+  name        = "allow_ssh_http"
+  description = "Allow SSH and HTTP inbound traffic"
 
   ingress {
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8081
+    to_port     = 8081
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -21,17 +28,19 @@ resource "aws_security_group" "allow_ssh" {
   }
 
   tags = {
-    Name = "allow_ssh"
+    Name = "allow_ssh_http"
   }
 }
 
 resource "aws_instance" "ubuntu" {
-  ami           = "ami-0a0aadde3561fdc1e"
-  instance_type = "t2.micro"
+  ami           = "ami-0d940f23d527c3ab1"
+  instance_type = "t2.medium"
 
   key_name = aws_key_pair.nexusKey.key_name
 
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
+
+  user_data = file("nexus.sh")
 
   tags = {
     Name = "nexus"
@@ -46,3 +55,4 @@ resource "aws_key_pair" "nexusKey" {
 output "instance_ip" {
   value = aws_instance.ubuntu.public_ip
 }
+
